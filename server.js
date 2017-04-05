@@ -3,6 +3,8 @@ const express = require('express')
 const bodyParser = require('body-parser')
 
 const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN
+const SECRET = process.env.SECRET
+const MESSAGE = process.env.MESSAGE
 const url = 'https://telegram-reverse-bot.glitch.me/'
 const port = process.env.PORT
 
@@ -29,8 +31,17 @@ function reverseString(s) {
   return s.split('').reverse().join('')
 }
 
+function secretMessage(s) {
+  if (SECRET === s)
+    return MESSAGE
+  else
+    return "What's is your last name?"
+}
+
 bot.on('message', (msg) => {
   console.log(msg)
-  if (msg.text)
+  if (msg.text && !SECRET)
     bot.sendMessage(msg.chat.id, reverseString(msg.text))
+  if (msg.text && SECRET)
+    bot.sendMessage(msg.chat.id, secretMessage(msg.text))
 })
