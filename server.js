@@ -1,39 +1,31 @@
-// server.js
-// where your node app starts
+const TelegramBot = require('node-telegram-bot-api')
+const express = require('express')
 
-// init project
-var express = require('express');
-var app = express();
+const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN
+const url = 'https://telegram-reverse-bot.glitch.me/'
+const port = process.env.PORT
 
-// we've started you off with Express, 
-// but feel free to use whatever libs or frameworks you'd like through `package.json`.
+// No need to pass any parameters as we will handle the updates with Express
+const bot = new TelegramBot(TELEGRAM_TOKEN)
 
-// http://expressjs.com/en/starter/static-files.html
-app.use(express.static('public'));
+// This informs the Telegram servers of the new webhook.
+bot.setWebHook(`${url}/bot${TELEGRAM_TOKEN}`)
 
-// http://expressjs.com/en/starter/basic-routing.html
-app.get("/", function (request, response) {
-  response.sendFile(__dirname + '/views/index.html');
-});
+const app = express()
 
-app.get("/dreams", function (request, response) {
-  response.send(dreams);
-});
+app.post(`/bot${TELEGRAM_TOKEN}`, (req, res) => {
+  bot.processUpdate(req.body)
+  res.sendStatus(200)
+})
 
-// could also use the POST body instead of query string: http://expressjs.com/en/api.html#req.body
-app.post("/dreams", function (request, response) {
-  dreams.push(request.query.dream);
-  response.sendStatus(200);
-});
+app.listen(port, () => {
+  console.log(`Express server is listening on ${port}`)
+})
 
-// Simple in-memory store for now
-var dreams = [
-  "Find and count some sheep",
-  "Climb a really tall mountain",
-  "Wash the dishes"
-];
+function reverseString(s) {
+  return s.split('').reverse().join('')
+}
 
-// listen for requests :)
-var listener = app.listen(process.env.PORT, function () {
-  console.log('Your app is listening on port ' + listener.address().port);
-});
+bot.on('message', (msg) => {
+  bot.sendMessage(msg.chat.id, reverseString(msg))
+})
