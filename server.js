@@ -1,5 +1,6 @@
 const TelegramBot = require('node-telegram-bot-api')
 const express = require('express')
+const bodyParser = require('body-parser')
 
 const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN
 const url = 'https://telegram-reverse-bot.glitch.me/'
@@ -12,6 +13,8 @@ const bot = new TelegramBot(TELEGRAM_TOKEN)
 bot.setWebHook(`${url}/bot${TELEGRAM_TOKEN}`)
 
 const app = express()
+
+app.use(bodyParser.json());
 
 app.post(`/bot${TELEGRAM_TOKEN}`, (req, res) => {
   bot.processUpdate(req.body)
@@ -27,5 +30,7 @@ function reverseString(s) {
 }
 
 bot.on('message', (msg) => {
-  bot.sendMessage(msg.chat.id, reverseString(msg))
+  console.log(msg)
+  if (msg.text)
+    bot.sendMessage(msg.chat.id, reverseString(msg.text))
 })
